@@ -93,12 +93,9 @@ module RSpec
       end
 
       def field_collection
-        if @graph_object.respond_to?(@fields)
-          @graph_object.public_send(@fields)
-        else
-          raise "Invalid object #{@graph_object} provided to #{matcher_name} " \
-            'matcher. It does not seem to be a valid GraphQL object type.'
-        end
+        get_field_collection ||
+          raise("Invalid object #{@graph_object} provided to #{matcher_name} " \
+            'matcher. It does not seem to be a valid GraphQL object type.')
       end
 
       def matcher_name
@@ -106,6 +103,14 @@ module RSpec
         when :fields        then 'have_a_field'
         when :input_fields  then 'have_an_input_field'
         when :return_fields then 'have_a_return_field'
+        end
+      end
+
+      def get_field_collection
+        case @fields
+        when :fields then @graph_object.fields
+        when :input_fields then @graph_object.arguments
+        when :return_fields then @graph_object.payload_type.fields
         end
       end
     end
